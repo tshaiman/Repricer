@@ -44,9 +44,6 @@ public class Pricer extends PiplineJob {
         }).collect(Collectors.toList());
 
         //Send the Result to the Output Writer
-        //result.forEach(r-> System.out.println("old : " + r.prevPrice + " , new : " + r.newPrice + " TID " + Thread.currentThread().getId()));
-        System.out.println("Current counter is " + at.get() + " -> Sending to Writer");
-
         BulkMessage<RepricerMessage> bulkMessage = new BulkMessage<>(outputBatch);
         toQueue.put(bulkMessage);
 

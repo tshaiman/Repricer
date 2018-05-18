@@ -42,34 +42,31 @@ public class Application implements ApplicationRunner {
         Pricer pricer = new Pricer(q2,q3);
         FileWriter fileWriter = new FileWriter(q3,null);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(16);
-        executorService.execute(b);
+        int threads = Runtime.getRuntime().availableProcessors();
+        ExecutorService flowService = Executors.newFixedThreadPool(threads);
+        ExecutorService ioService = Executors.newFixedThreadPool(threads);
+
+
+        flowService.execute(b);
         //3 workers on Pricer
-        executorService.execute(pricer);
-        executorService.execute(pricer);
-        executorService.execute(pricer);
+        flowService.execute(pricer);
+        flowService.execute(pricer);
+        flowService.execute(pricer);
 
         //4 workers on FileWriter
-        executorService.execute(fileWriter);
-        executorService.execute(fileWriter);
-        //executorService.execute(fileWriter);
-        //executorService.execute(fileWriter);
+        ioService.execute(fileWriter);
+        ioService.execute(fileWriter);
+        ioService.execute(fileWriter);
+        ioService.execute(fileWriter);
 
 
         IntStream.range(0, 10)
-                .forEach(ct -> executorService.execute(() -> {
+                .forEach(ct -> flowService.execute(() -> {
                     for(int i = 0; i < 100; ++i){
                         PricerMessage p = new PricerMessage(UUID.randomUUID().toString(),1,2,10);
                         q1.put(p);
                     }
                 }));
-
-        Thread.sleep(1000);
-        PricerMessage p = new PricerMessage(UUID.randomUUID().toString(),1,2,10);
-        q1.put(p);
-        Thread.sleep(2000);
-        p = new PricerMessage(UUID.randomUUID().toString(),1,2,10);
-        q1.put(p);
 
         Thread.sleep(60000);
 
