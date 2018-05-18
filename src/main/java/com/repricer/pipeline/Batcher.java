@@ -52,7 +52,9 @@ public class Batcher extends PiplineJob{
             if (System.currentTimeMillis() - bulkTs > window && buffer.size() > 0)
                 flushBulk();
             return true;
-        }catch (Exception e) {return false;}
+        }catch (Exception e) {
+            logger.error(e.getMessage());
+            return false;}
     }
 
 
@@ -63,7 +65,6 @@ public class Batcher extends PiplineJob{
     }
 
     private void flushBulk() {
-        //System.out.println("Sending bulk to next component " + at.incrementAndGet());
         BulkMessage bulk = new BulkMessage(buffer);
         buffer.clear();
         bulkTs = System.currentTimeMillis();

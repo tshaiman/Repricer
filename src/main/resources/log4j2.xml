@@ -25,10 +25,12 @@
     <Loggers>
         <Logger name="com.feedvisor.repricer" level="info" additivity="false">
             <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="FileAppender" />
         </Logger>
 
         <Root level="info">
             <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="FileAppender" />
         </Root>
     </Loggers>
 </Configuration>

@@ -20,11 +20,14 @@ public class ConfigProperties {
     private int pollTime ;
     @Value("${max-concurrency}")
     private int maxConcurrency;
+    @Value("${output-path}")
+    private String outputPath;
 
     public int getWindow(){return window;}
     public int getBatchSize(){return batchSize;}
     public int getPollTime(){return pollTime;}
     public int getMaxConcurrency(){return maxConcurrency;}
+    public String getOutputPath(){return outputPath;}
 
 
 

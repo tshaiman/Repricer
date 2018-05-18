@@ -64,7 +64,9 @@ public abstract class PiplineJob implements Runnable {
                     ProcessMessage(msg);
                 else
                     IdleMessage();
-            }catch (Exception ex) {}
+            }catch (Exception ex) {
+                logger.error(ex.getMessage());
+            }
         }
         postRun();
     }
