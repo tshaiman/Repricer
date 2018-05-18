@@ -2,6 +2,7 @@ package com.repricer.pipeline;
 
 import com.repricer.Messaging.*;
 import com.repricer.utils.ConfigProperties;
+import com.repricer.utils.Monitor;
 
 import java.util.List;
 import java.util.Random;
@@ -11,11 +12,7 @@ import java.util.concurrent.*;
 
 public class Pricer extends PiplineJob {
 
-    private Random rand = new Random(System.currentTimeMillis());
-    private static AtomicLong at ;
-    static {
-        at = new AtomicLong(0);
-    }
+
     public Pricer(ServiceBus<Message> batcherQ, ServiceBus<Message> writerQ, ConfigProperties config) {
         super(batcherQ,writerQ,config);
     }
@@ -39,7 +36,8 @@ public class Pricer extends PiplineJob {
             reprice.priceUpperBound = high;
             reprice.prevPrice = pricer.getCurrent();
             reprice.newPrice = ThreadLocalRandom.current().nextDouble(low,high);
-            at.incrementAndGet();
+            //Monitor
+            Monitor.pricerCounter.incrementAndGet();
             return reprice;
         }).collect(Collectors.toList());
 

@@ -1,10 +1,11 @@
-package com.repricer;
+package com.repricer.controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.repricer.Messaging.Message;
 import com.repricer.Messaging.RequestMessage;
 import com.repricer.Messaging.ServiceBus;
+import com.repricer.PipelineBuilder;
 import com.repricer.utils.ConfigProperties;
 import com.repricer.utils.ResourceThrottler;
 import org.apache.logging.log4j.LogManager;

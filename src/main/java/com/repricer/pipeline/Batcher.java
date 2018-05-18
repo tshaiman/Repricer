@@ -5,6 +5,7 @@ import com.repricer.Messaging.BulkMessage;
 import com.repricer.Messaging.Message;
 import com.repricer.Messaging.ServiceBus;
 import com.repricer.utils.ConfigProperties;
+import com.repricer.utils.Monitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,8 +18,6 @@ import static java.lang.Thread.sleep;
 
 public class Batcher extends PiplineJob{
 
-
-    private AtomicLong at = new AtomicLong(0);
     private List<Message> buffer  = new LinkedList<>();
     private long bulkTs = 0;
 
@@ -39,6 +38,10 @@ public class Batcher extends PiplineJob{
         if (diff > window)
             flushBulk();
         addToBulk(m);
+
+        //Monitor
+        Monitor.batcherCounter.incrementAndGet();
+
         return true;
     }
 
