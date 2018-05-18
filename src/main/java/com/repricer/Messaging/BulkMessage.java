@@ -3,18 +3,21 @@ package com.repricer.Messaging;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BulkMessage extends Message{
+public class BulkMessage<T extends  Message> extends Message{
 
-    private List<PricerMessage> bulk ;
+    private ArrayList<T> bulk ;
 
-
-    public BulkMessage(List<Message> lst){
-        bulk = new ArrayList<>();
-        for(int i= 0 ; i < lst.size() ; ++i)
-            bulk.add((PricerMessage)lst.get(i));
+    public BulkMessage(List<T> lst){
+        bulk = new ArrayList<>(lst);
     }
 
-    public List<PricerMessage> getBulk() {
+    public boolean isEmpty() {
+        return bulk.isEmpty();
+    }
+
+    public List<T> getBulk() {
         return bulk;
     }
+
+
 }

@@ -24,10 +24,12 @@ public abstract class PiplineJob implements Runnable {
     }
 
     //////////////Running Interface ///////////////////////////////////
-
-    protected abstract boolean shouldRun();
     protected abstract boolean ProcessMessage(Message m);
-    protected abstract boolean IdleMessage();
+
+
+    protected boolean IdleMessage(){
+        return true;
+    }
 
     protected void preRun(){
 
@@ -35,6 +37,9 @@ public abstract class PiplineJob implements Runnable {
 
     protected void postRun(){
 
+    }
+    protected boolean shouldRun(){
+        return true;
     }
 
 

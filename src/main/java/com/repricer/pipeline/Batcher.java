@@ -29,14 +29,13 @@ public class Batcher extends PiplineJob{
         super(dispatcherQ,pricerQ);
     }
 
-    @Override
-    protected boolean shouldRun() {
-        return true;
-    }
 
     @Override
     protected boolean ProcessMessage(Message m) {
-        batch(m);
+        long diff = m.getReceivedTime() - bulkTs;
+        if (diff > BatchWindow)
+            flushBulk();
+        addToBulk(m);
         return true;
     }
 
@@ -50,14 +49,6 @@ public class Batcher extends PiplineJob{
         }catch (Exception e) {return false;}
     }
 
-
-    private void batch(Message m){
-
-        long diff = m.getReceivedTime() - bulkTs;
-        if (diff > BatchWindow)
-            flushBulk();
-        addToBulk(m);
-    }
 
     private void addToBulk(Message m) {
         buffer.add(m);

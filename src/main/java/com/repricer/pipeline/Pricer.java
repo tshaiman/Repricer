@@ -20,40 +20,39 @@ public class Pricer extends PiplineJob {
         super(batcherQ,writerQ);
     }
 
-    @Override
-    protected boolean shouldRun() {
-        return true;
-    }
 
     @Override
     protected boolean ProcessMessage(Message m) {
-        BulkMessage bulk = (BulkMessage) m;
+        BulkMessage<Message> bulk = (BulkMessage) m;
         if(bulk == null)
             return false;
+        if(bulk.isEmpty())
+            return false;
 
-        List<RepricerMessage> result = bulk.getBulk().stream().map(pr->{
+        List<RepricerMessage> outputBatch = bulk.getBulk().stream().map(pr->{
+            PricerMessage pricer = (PricerMessage)pr;
             RepricerMessage reprice = new RepricerMessage();
-            double low = pr.getLower();
-            double high = pr.getUpper();
-            reprice.productId = pr.getProductId();
+            double low = pricer.getLower();
+            double high = pricer.getUpper();
+            reprice.productId = pricer.getProductId();
             reprice.priceLowerBound = low;
             reprice.priceUpperBound = high;
-            reprice.prevPrice = pr.getCurrent();
+            reprice.prevPrice = pricer.getCurrent();
             reprice.newPrice = ThreadLocalRandom.current().nextDouble(low,high);
             at.incrementAndGet();
             return reprice;
         }).collect(Collectors.toList());
 
         //Send the Result to the Output Writer
-        result.forEach(r-> System.out.println("old : " + r.prevPrice + " , new : " + r.newPrice + " TID " + Thread.currentThread().getId()));
-        System.out.println("Current counter is " + at.get());
+        //result.forEach(r-> System.out.println("old : " + r.prevPrice + " , new : " + r.newPrice + " TID " + Thread.currentThread().getId()));
+        System.out.println("Current counter is " + at.get() + " -> Sending to Writer");
+
+        BulkMessage<RepricerMessage> bulkMessage = new BulkMessage<>(outputBatch);
+        toQueue.put(bulkMessage);
+
         return true;
     }
 
-    @Override
-    protected boolean IdleMessage() {
-        return false;
-    }
 
 
 }

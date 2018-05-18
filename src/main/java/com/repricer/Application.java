@@ -4,6 +4,7 @@ import com.repricer.Messaging.Message;
 import com.repricer.Messaging.PricerMessage;
 import com.repricer.pipeline.Batcher;
 import com.repricer.Messaging.ServiceBus;
+import com.repricer.pipeline.FileWriter;
 import com.repricer.pipeline.Pricer;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -30,29 +31,30 @@ public class Application implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        List<Message> lst = new LinkedList<>();
-        lst.add(new PricerMessage("a",1,2,10));
-        lst.add(new PricerMessage("b",1,2,10));
-        lst.add(new PricerMessage("c",1,2,10));
-
-        PricerMessage[] arr = new PricerMessage[1];
-        lst.toArray(arr);
 
 
-
-        //4 Threads
         ServiceBus<Message> q1 = new ServiceBus<>();
         ServiceBus<Message> q2 = new ServiceBus<>();
         ServiceBus<Message> q3 = new ServiceBus<>();
 
+
         Batcher b = new Batcher(q1,q2);
         Pricer pricer = new Pricer(q2,q3);
+        FileWriter fileWriter = new FileWriter(q3,null);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(8);
+        ExecutorService executorService = Executors.newFixedThreadPool(16);
         executorService.execute(b);
+        //3 workers on Pricer
         executorService.execute(pricer);
         executorService.execute(pricer);
         executorService.execute(pricer);
+
+        //4 workers on FileWriter
+        executorService.execute(fileWriter);
+        executorService.execute(fileWriter);
+        //executorService.execute(fileWriter);
+        //executorService.execute(fileWriter);
+
 
         IntStream.range(0, 10)
                 .forEach(ct -> executorService.execute(() -> {
