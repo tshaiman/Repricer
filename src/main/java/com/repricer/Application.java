@@ -43,12 +43,13 @@ public class Application implements ApplicationRunner {
         FileWriter fileWriter = new FileWriter(q3,null);
 
         int threads = Runtime.getRuntime().availableProcessors();
-        ExecutorService flowService = Executors.newFixedThreadPool(threads);
-        ExecutorService ioService = Executors.newFixedThreadPool(threads);
+        ExecutorService flowService = Executors.newFixedThreadPool(16);
+        ExecutorService ioService = Executors.newFixedThreadPool(4);
 
 
         flowService.execute(b);
         //3 workers on Pricer
+        flowService.execute(pricer);
         flowService.execute(pricer);
         flowService.execute(pricer);
         flowService.execute(pricer);

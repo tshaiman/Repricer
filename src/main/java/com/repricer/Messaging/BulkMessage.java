@@ -15,6 +15,8 @@ public class BulkMessage<T extends  Message> extends Message{
         return bulk.isEmpty();
     }
 
+    public int Size() {return bulk.size();}
+
     public List<T> getBulk() {
         return bulk;
     }

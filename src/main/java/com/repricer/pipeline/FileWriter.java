@@ -9,28 +9,36 @@ import com.repricer.Messaging.ServiceBus;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FileWriter extends PiplineJob {
 
-    ObjectMapper mapper = new ObjectMapper();
-    DefaultPrettyPrinter pretty = new DefaultPrettyPrinter();
+    private static AtomicLong at  = new AtomicLong(0);
+    ObjectWriter writer;
+
 
     public FileWriter(ServiceBus<Message> from, ServiceBus<Message> to) {
         super(from, to);
+
+        ObjectMapper mapper = new ObjectMapper();
+        DefaultPrettyPrinter pretty = new DefaultPrettyPrinter();
+        writer = mapper.writer(pretty);
     }
 
     @Override
     protected boolean ProcessMessage(Message m) {
         BulkMessage bulk = (BulkMessage)m;
-        if(bulk == null)
+        if(bulk == null || bulk.isEmpty()) {
             return false;
+        }
 
+
+        at.addAndGet(bulk.Size());
         try{
-            ObjectWriter writer = mapper.writer(pretty);
-
-            String fileName = "pricer_" + System.currentTimeMillis() + ".json";
+            String fileName =String.format("pricer_%s.json", System.nanoTime());
             writer.writeValue(new File(fileName), bulk.getBulk().toArray());
-            System.out.println("Created file for batch " + fileName);
+
         }catch (IOException ex){
             logger.error("Could not write file f. Reason " + ex.getMessage());
         }
