@@ -1,8 +1,8 @@
 package com.repricer.pipeline;
 
 import com.repricer.Messaging.*;
+import com.repricer.utils.ConfigProperties;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,8 +16,8 @@ public class Pricer extends PiplineJob {
     static {
         at = new AtomicLong(0);
     }
-    public Pricer(ServiceBus<Message> batcherQ, ServiceBus<Message> writerQ) {
-        super(batcherQ,writerQ);
+    public Pricer(ServiceBus<Message> batcherQ, ServiceBus<Message> writerQ, ConfigProperties config) {
+        super(batcherQ,writerQ,config);
     }
 
 
@@ -30,7 +30,7 @@ public class Pricer extends PiplineJob {
             return false;
 
         List<RepricerMessage> outputBatch = bulk.getBulk().stream().map(pr->{
-            PricerMessage pricer = (PricerMessage)pr;
+            RequestMessage pricer = (RequestMessage)pr;
             RepricerMessage reprice = new RepricerMessage();
             double low = pricer.getLower();
             double high = pricer.getUpper();

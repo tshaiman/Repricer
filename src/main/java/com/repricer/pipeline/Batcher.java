@@ -4,6 +4,10 @@ package com.repricer.pipeline;
 import com.repricer.Messaging.BulkMessage;
 import com.repricer.Messaging.Message;
 import com.repricer.Messaging.ServiceBus;
+import com.repricer.utils.ConfigProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -13,27 +17,26 @@ import static java.lang.Thread.sleep;
 
 public class Batcher extends PiplineJob{
 
-    //Settings
-    public static final int BatchWindow = 1000; //in ms
-    public static final int MaxBatchSize = 10;
-    public static final int PollTimeout = 10;//in ms
 
-    //Message Queues : from Dispatcher -> ToPricer
     private AtomicLong at = new AtomicLong(0);
-
     private List<Message> buffer  = new LinkedList<>();
-
     private long bulkTs = 0;
 
-    public Batcher(ServiceBus<Message> dispatcherQ, ServiceBus<Message> pricerQ){
-        super(dispatcherQ,pricerQ);
+    private int window ;
+    private int maxBatchSize ;
+
+    public Batcher(ServiceBus<Message> dispatcherQ, ServiceBus<Message> pricerQ,ConfigProperties props){
+        super(dispatcherQ,pricerQ,props);
+        //Properties
+        window = configProperties.getWindow();
+        maxBatchSize = configProperties.getBatchSize();
     }
 
 
     @Override
     protected boolean ProcessMessage(Message m) {
         long diff = m.getReceivedTime() - bulkTs;
-        if (diff > BatchWindow)
+        if (diff > window)
             flushBulk();
         addToBulk(m);
         return true;
@@ -43,7 +46,7 @@ public class Batcher extends PiplineJob{
     protected boolean IdleMessage() {
         try {
             sleep(100);
-            if (System.currentTimeMillis() - bulkTs > BatchWindow && buffer.size() > 0)
+            if (System.currentTimeMillis() - bulkTs > window && buffer.size() > 0)
                 flushBulk();
             return true;
         }catch (Exception e) {return false;}
@@ -52,7 +55,7 @@ public class Batcher extends PiplineJob{
 
     private void addToBulk(Message m) {
         buffer.add(m);
-        if(buffer.size() == MaxBatchSize)
+        if(buffer.size() == maxBatchSize)
             flushBulk();
     }
 
