@@ -5,10 +5,8 @@ import com.repricer.utils.ConfigProperties;
 import com.repricer.utils.Monitor;
 
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import java.util.concurrent.*;
 
 public class Pricer extends PiplineJob {
 

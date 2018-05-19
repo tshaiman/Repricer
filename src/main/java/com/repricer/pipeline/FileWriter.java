@@ -11,8 +11,6 @@ import com.repricer.utils.Monitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class FileWriter extends PiplineJob {
 
@@ -29,38 +27,37 @@ public class FileWriter extends PiplineJob {
         File dirs = new File(outputPath);
         if (!dirs.exists()) {
             if (dirs.mkdirs()) {
-                logger.warn("Directory " + outputPath + " was created successfully!");
+                logger.info("Directory {}  was created successfully!" ,outputPath );
 
             } else {
-                logger.error("Directory " + outputPath + " could not be created!");
+                logger.error("Directory {}  could not be created. Check Path" , outputPath );
             }
         }
-
     }
 
     @Override
     protected boolean ProcessMessage(Message m) {
         BulkMessage bulk = (BulkMessage) m;
+
         if (bulk == null || bulk.isEmpty()) {
             return false;
         }
 
+        String fileName = String.format("%spricer_%s.json", outputPath, System.nanoTime());
         try {
-            String fileName = String.format("%spricer_%s.json", outputPath, System.nanoTime());
+
             writer.writeValue(new File(fileName), bulk.getBulk().toArray());
             log(fileName, bulk.Size());
 
-
         } catch (IOException ex) {
-            logger.error("Could not write file f. Reason " + ex.getMessage());
+            logger.error("Could not write file {}. Reason: {} " ,fileName, ex.getMessage());
         }
 
         return true;
     }
 
     private void log(String fileName, int size) {
-        logger.info("File Writer created file " + fileName + " with" + size + " items");
-        //write to monitor
+        logger.info("File Writer created file {} with {} items.",fileName,size);
         Monitor.writerCounter.addAndGet(size);
     }
 

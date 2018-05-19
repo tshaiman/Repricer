@@ -1,7 +1,5 @@
 package com.repricer.controller;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.repricer.Messaging.Message;
 import com.repricer.Messaging.RequestMessage;
 import com.repricer.Messaging.ServiceBus;
@@ -20,10 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RepricerController {
 
-    private final AtomicLong counter = new AtomicLong();
     private static Logger logger = LogManager.getLogger();
     public static final int DEFAULT_MAX_CONCURRENCY = 50;
-    private static int MAX_CONCURRENCY;
+
 
 
     private ResourceThrottler throller;
@@ -31,11 +28,9 @@ public class RepricerController {
 
 
     @Autowired
-    public void setConfig(ConfigProperties config) {
-        MAX_CONCURRENCY = Math.max(DEFAULT_MAX_CONCURRENCY, config.getMaxConcurrency());
-
-        throller = new ResourceThrottler(MAX_CONCURRENCY);
-        //we can now build pipeline
+    public void init(ConfigProperties config) {
+        int maxConcurrency = Math.max(DEFAULT_MAX_CONCURRENCY, config.getMaxConcurrency());
+        throller = new ResourceThrottler(maxConcurrency);
         dispatcherQueue = PipelineBuilder.setUpPipeline(config);
     }
 
@@ -51,20 +46,16 @@ public class RepricerController {
             return new ResponseEntity<>("OK", HttpStatus.BANDWIDTH_LIMIT_EXCEEDED);
 
         try {
-            //Build new Pricer-Request message
             RequestMessage request = new RequestMessage(prodId, Double.parseDouble(curPrice),Double.parseDouble(lower),Double.parseDouble(upper));
             if(!request.validate())
                 return new ResponseEntity<>("Bad Pararms", HttpStatus.BAD_REQUEST);
 
-            //Finally !!Send to the Dispatcher Q
             dispatcherQueue.put(request);
             return new ResponseEntity<>("OK", HttpStatus.OK);
 
         } finally {
             throller.endServe();
         }
-
-
     }
 
 

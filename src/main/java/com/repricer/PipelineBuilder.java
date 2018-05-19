@@ -14,7 +14,7 @@ public  class PipelineBuilder {
 
     /**
      * SetUp a Pipelince for the repricer flow and return the Dispatcher Service Bus
-     * @param args
+     * @param config
      * @return
      * @throws Exception
      */
@@ -30,9 +30,8 @@ public  class PipelineBuilder {
         Pricer pricer = new Pricer(pricerQ,writerQ,config);
         FileWriter fileWriter = new FileWriter(writerQ,null,config);
 
-        int threads = Runtime.getRuntime().availableProcessors();
         ExecutorService service = Executors.newFixedThreadPool(16);
-        ExecutorService ioService = Executors.newFixedThreadPool(4);
+
 
         //exactly One Batcher
         service.execute(batcher);
@@ -43,10 +42,10 @@ public  class PipelineBuilder {
 
 
         //4 workers on FileWriter
-        ioService.execute(fileWriter);
-        ioService.execute(fileWriter);
-        ioService.execute(fileWriter);
-        ioService.execute(fileWriter);
+        service.execute(fileWriter);
+        service.execute(fileWriter);
+        service.execute(fileWriter);
+        service.execute(fileWriter);
 
         return dispatcherQ;
 
